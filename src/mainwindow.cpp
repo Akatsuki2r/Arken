@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 */
 
 #include "mainwindow.h"
+#include "arken/arkenstyle.h"
 #include "assets/assetpanel.hpp"
 #include "audiomixer/mixermanager.hpp"
 #include "bin/clipcreator.hpp"
@@ -511,6 +512,9 @@ void MainWindow::init()
     m_undoView->setEmptyLabel(i18n("Clean"));
     m_undoView->setGroup(m_commandStack);
     m_undoView->addAction(cleanHistory);
+    // Arken design-system proof of concept: consume shared tokens for the
+    // Undo History panel instead of per-widget hard-coded styling.
+    ArkenStyle::polishListView(m_undoView);
 
     m_undoView->setContextMenuPolicy(Qt::ActionsContextMenu);
     m_undoViewDock = addDock(i18n("Undo History"), QStringLiteral("undo_history"), m_undoView, KDDockWidgets::Location_None, m_projectBinDock);
