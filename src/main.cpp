@@ -324,6 +324,9 @@ int main(int argc, char *argv[])
 
     // Set application data
     KAboutData::setApplicationData(aboutData);
+    // ArkenV user-facing identity. Internal identifiers (component name,
+    // config paths, action IDs) intentionally stay on kdenlive.
+    app.setApplicationDisplayName(QStringLiteral("ArkenV"));
 #ifndef Q_OS_MACOS // skip this on macOS to have proper mime-type icon visible
     app.setWindowIcon(QIcon(QStringLiteral(":/pics/kdenlive.png")));
 #endif

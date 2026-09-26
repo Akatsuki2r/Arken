@@ -109,3 +109,32 @@ Undo History dock (`QUndoView` in `src/mainwindow.cpp`): a single
 `ArkenStyle::polishListView(m_undoView)` call applies the shared palette,
 body font, item spacing and alternating rows. No model, undo, action-ID or
 behavior change — purely token consumption in real application code.
+
+## Shell pilot (Phase 1B)
+
+`src/arken/arkenshell.h` / `arkenshell.cpp` (`ArkenShell` namespace) holds the
+reusable shell primitives:
+
+- `shellStyleSheet()` — application-scoped QSS generated entirely from tokens.
+  Narrow selectors only: `QMenuBar`, `QMenu`, `QToolBar` (+ toolbar buttons,
+  separators), `QStatusBar`, `QToolTip`. No `QWidget`/view selectors, so inner
+  panels keep existing styling until their own phases.
+- `styleMainWindow(QMainWindow *)` — Arken palette via `ArkenStyle`,
+  body font on the menu bar, caption font on the status bar.
+- `styleToolBar(QToolBar *)` — body font + token spacing; visuals come from
+  the sheet. Button style, icon size and behavior untouched.
+
+Wiring: `MainWindow::finishUiSetup()` (`src/mainwindow.cpp`) applies all of
+the above once the full workspace exists. KDDockWidgets chrome is styled at
+construction in `src/kddocksetup.cpp` (title-bar palette/section font, tab-bar
+palette/body font, separator divider/accent tokens) because those widgets
+self-paint and answer better to palette than to sheets.
+
+User-facing identity: `app.setApplicationDisplayName("ArkenV")` in
+`src/main.cpp` (window titles, About dialog) and the splash title in
+`src/dialogs/Splash.qml`. Internal identifiers (`org.kde.kdenlive`, component
+name, config paths, action IDs) deliberately unchanged.
+
+Known limitation: Qt style sheets do not support `outline`, so keyboard-focus
+rings on toolbar buttons currently rely on hover/checked states only. A
+delegate-painted focus indicator is deferred to a later phase.

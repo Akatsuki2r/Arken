@@ -3,6 +3,7 @@
 
 set(kdenlive_SRCS
   ${kdenlive_SRCS}
+  arken/arkenshell.cpp
   arken/arkentheme.cpp
   arken/arkenstyle.cpp
   PARENT_SCOPE

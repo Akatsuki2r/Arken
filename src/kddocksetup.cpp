@@ -5,6 +5,8 @@ SPDX-License-Identifier: GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 */
 
 #include "kddocksetup.h"
+#include "arken/arkenstyle.h"
+#include "arken/arkentheme.h"
 #include "core.h"
 #include "kdenlivesettings.h"
 
@@ -23,13 +25,18 @@ public:
         setDocumentMode(true);
         parentWidget->setProperty("_breeze_force_frame", false);
         setContextMenuPolicy(Qt::CustomContextMenu);
+        // ArkenV dock chrome: shared panel palette and body font instead of
+        // inheriting the desktop theme for dock tab bars.
+        setPalette(ArkenStyle::panelPalette());
+        setFont(ArkenTheme::instance()->bodyFont());
         // The constructor of KDDockWidgets::QtWidgets::TabBar makes a QProxyStyle
         // that ends up taking ownership of the style for the entire application!
         if (QProxyStyle *proxy_style = qobject_cast<QProxyStyle *>(style())) {
             proxy_style->baseStyle()->setParent(qApp);
             proxy_style->setBaseStyle(QStyleFactory::create(qApp->style()->name()));
         }
-        setPalette(qApp->palette());
+        // Re-apply after the proxy-style swap above, which resets the palette.
+        setPalette(ArkenStyle::panelPalette());
 
         connect(this, &QWidget::customContextMenuRequested, []() { Q_EMIT pCore.get()->switchTitleBars(); });
         connect(this, &KDDockWidgets::QtWidgets::TabBar::countChanged, [&]() {
@@ -67,6 +74,13 @@ public:
         : KDDockWidgets::QtWidgets::TitleBar(controller, parent)
         , m_controller(controller)
     {
+        // ArkenV dock chrome: elevated surface with secondary text and section
+        // typography so dock titles read as deliberate chrome, not OS chrome.
+        QPalette titlePalette = ArkenStyle::panelPalette();
+        titlePalette.setColor(QPalette::Window, ArkenTheme::instance()->surfaceElevated());
+        titlePalette.setColor(QPalette::WindowText, ArkenTheme::instance()->textSecondary());
+        setPalette(titlePalette);
+        setFont(ArkenTheme::instance()->sectionFont());
         connect(pCore.get(), &Core::hideBars, this, [this](bool hide) {
             if (hide) {
 #if defined(Q_OS_WIN)
@@ -102,6 +116,7 @@ public:
         : KDDockWidgets::QtWidgets::Separator(controller, parent)
         , m_controller(controller)
     {
+        setPalette(ArkenStyle::panelPalette());
     }
 
     ~KdenliveDockSeparator() override;
@@ -123,7 +138,8 @@ public:
     void paintEvent(QPaintEvent *) override
     {
         QPainter p(this);
-        QColor separatorColor = hovered ? palette().highlight().color() : palette().midlight().color();
+        // ArkenV separator: divider token at rest, accent token on hover.
+        QColor separatorColor = hovered ? ArkenTheme::instance()->accent() : ArkenTheme::instance()->divider();
         if (hovered) {
             separatorColor.setAlpha(128);
         }

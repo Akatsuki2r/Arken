@@ -6,11 +6,17 @@
 #include "catch.hpp"
 #include "test_utils.hpp"
 // test specific headers
+#include "arken/arkenshell.h"
 #include "arken/arkentheme.h"
 #include "arken/arkenstyle.h"
 
+#include <QLayout>
 #include <QListView>
+#include <QMainWindow>
+#include <QMenuBar>
 #include <QMetaProperty>
+#include <QStatusBar>
+#include <QToolBar>
 
 namespace {
 QStringList expectedColorProperties()
@@ -179,5 +185,81 @@ TEST_CASE("ArkenStyle bridges tokens to QWidget", "[ArkenStyle]")
         REQUIRE(view.alternatingRowColors());
         // No selection model installed by polishing: interaction behavior untouched.
         REQUIRE(view.selectionModel() == selectionBefore);
+    }
+}
+
+TEST_CASE("ArkenShell stylesheet is generated from tokens", "[ArkenShell]")
+{
+    ArkenTheme::instance()->setTheme(ArkenTheme::Theme::Dark);
+    const ArkenTheme *theme = ArkenTheme::instance();
+    const QString sheet = ArkenShell::shellStyleSheet();
+
+    SECTION("Sheet is non-trivial and token-driven")
+    {
+        REQUIRE(!sheet.isEmpty());
+        // Every structural color must come from the active theme, not literals.
+        REQUIRE(sheet.contains(theme->appBackground().name()));
+        REQUIRE(sheet.contains(theme->surface().name()));
+        REQUIRE(sheet.contains(theme->surfaceElevated().name()));
+        REQUIRE(sheet.contains(theme->border().name()));
+        REQUIRE(sheet.contains(theme->divider().name()));
+        REQUIRE(sheet.contains(theme->textPrimary().name()));
+        REQUIRE(sheet.contains(theme->textMuted().name()));
+        REQUIRE(sheet.contains(theme->accent().name()));
+        REQUIRE(sheet.contains(theme->selection().name()));
+    }
+
+    SECTION("Sheet only targets shell chrome selectors")
+    {
+        REQUIRE(sheet.contains(QStringLiteral("QMenuBar")));
+        REQUIRE(sheet.contains(QStringLiteral("QMenu")));
+        REQUIRE(sheet.contains(QStringLiteral("QToolBar")));
+        REQUIRE(sheet.contains(QStringLiteral("QStatusBar")));
+        REQUIRE(sheet.contains(QStringLiteral("QToolTip")));
+        // Inner editing surfaces must not be restyled by the shell sheet.
+        REQUIRE(!sheet.contains(QStringLiteral("QTreeView")));
+        REQUIRE(!sheet.contains(QStringLiteral("QListView")));
+        REQUIRE(!sheet.contains(QStringLiteral("QWidget")));
+    }
+
+    SECTION("Switching theme regenerates the sheet from the new tokens")
+    {
+        ArkenTheme::instance()->setTheme(ArkenTheme::Theme::Light);
+        const QString lightSheet = ArkenShell::shellStyleSheet();
+        REQUIRE(lightSheet.contains(ArkenTheme::instance()->appBackground().name()));
+        REQUIRE(lightSheet != sheet);
+        ArkenTheme::instance()->setTheme(ArkenTheme::Theme::Dark);
+    }
+}
+
+TEST_CASE("ArkenShell styles shell widgets from tokens", "[ArkenShell]")
+{
+    ArkenTheme::instance()->setTheme(ArkenTheme::Theme::Dark);
+    const ArkenTheme *theme = ArkenTheme::instance();
+
+    SECTION("Main window gets the Arken palette and chrome fonts")
+    {
+        QMainWindow window;
+        ArkenShell::styleMainWindow(&window);
+        REQUIRE(window.palette().color(QPalette::Window) == theme->appBackground());
+        REQUIRE(window.font().pointSizeF() == theme->bodyFont().pointSizeF());
+        REQUIRE(window.menuBar()->font().pointSizeF() == theme->bodyFont().pointSizeF());
+        REQUIRE(window.statusBar()->font().pointSizeF() == theme->captionFont().pointSizeF());
+    }
+
+    SECTION("Toolbar gets Arken spacing without behavior change")
+    {
+        QToolBar bar;
+        const Qt::ToolButtonStyle styleBefore = bar.toolButtonStyle();
+        ArkenShell::styleToolBar(&bar);
+        REQUIRE(bar.font().pointSizeF() == theme->bodyFont().pointSizeF());
+        REQUIRE(bar.layout()->spacing() == theme->spaceXs());
+        REQUIRE(bar.toolButtonStyle() == styleBefore);
+    }
+
+    SECTION("Null widgets are ignored")
+    {
+        ArkenShell::styleMainWindow(nullptr);
+        ArkenShell::styleToolBar(nullptr);
     }
 }

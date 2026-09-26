@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 */
 
 #include "mainwindow.h"
+#include "arken/arkenshell.h"
 #include "arken/arkenstyle.h"
 #include "assets/assetpanel.hpp"
 #include "audiomixer/mixermanager.hpp"
@@ -956,6 +957,13 @@ void MainWindow::init()
 void MainWindow::finishUiSetup()
 {
     pCore->restoreLayout();
+    // ArkenV shell pilot: apply the shared design-system chrome once the full
+    // workspace (toolbars, menus, docks) exists. Editing surfaces keep their
+    // existing styling until their own redesign phases.
+    ArkenShell::styleMainWindow(this);
+    ArkenShell::styleToolBar(toolBar());
+    ArkenShell::styleToolBar(m_timelineToolBar);
+    qApp->setStyleSheet(ArkenShell::shellStyleSheet());
     Q_EMIT pCore->closeSplash();
     setAutoSaveSettings();
     QObject::disconnect(pCore.get(), &Core::GUISetupDone, this, nullptr);
