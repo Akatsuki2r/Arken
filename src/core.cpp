@@ -2294,6 +2294,28 @@ void Core::showEffectStackFromId(ObjectId owner)
     default:
         break;
     }
+    // Also emit ArkenV inspector context request
+    Arken::InspectorContext ctx = Arken::InspectorContext::None;
+    switch (owner.type) {
+    case KdenliveObjectType::TimelineClip: ctx = Arken::InspectorContext::TimelineClip; break;
+    case KdenliveObjectType::TimelineTrack: ctx = Arken::InspectorContext::TimelineTrack; break;
+    case KdenliveObjectType::TimelineComposition: ctx = Arken::InspectorContext::TimelineComposition; break;
+    case KdenliveObjectType::Master: ctx = Arken::InspectorContext::TimelineMaster; break;
+    case KdenliveObjectType::BinClip: ctx = Arken::InspectorContext::BinClip; break;
+    default: break;
+    }
+    if (ctx != Arken::InspectorContext::None) {
+        Q_EMIT requestInspectorContext(ctx, owner);
+    }
+}
+
+void Core::requestInspectorContext(Arken::InspectorContext context, ObjectId owner,
+                                   std::shared_ptr<EffectStackModel> stackModel,
+                                   std::shared_ptr<AssetParameterModel> paramModel,
+                                   const QSize &frameSize,
+                                   bool showKeyframes)
+{
+    Q_EMIT inspectorContextRequested(context, owner, stackModel, paramModel, frameSize, showKeyframes);
 }
 
 void Core::openDocumentationLink(const QUrl &link)

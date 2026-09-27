@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 */
 
 #include "mainwindow.h"
+#include "arken/arkeninspector_main.h"
 #include "arken/arkenshell.h"
 #include "arken/arkenstyle.h"
 #include "assets/assetpanel.hpp"
@@ -379,6 +380,9 @@ void MainWindow::init()
     connect(m_assetPanel, &AssetPanel::doSplitBinEffect, m_clipMonitor, &Monitor::slotSwitchCompare);
     connect(m_assetPanel, &AssetPanel::switchCurrentComposition, this,
             [&](int cid, const QString &compositionId) { getCurrentTimeline()->model()->switchComposition(cid, compositionId); });
+    // ArkenV Inspector context connection
+    connect(pCore.get(), &Core::requestInspectorContext, m_arkenInspector,
+            &Arken::ArkenInspector::setContext, Qt::QueuedConnection);
     connect(pCore->bin(), &Bin::updateTabName, m_timelineTabs, &TimelineTabs::renameTab);
     connect(m_timelineTabs, &TimelineTabs::showMixModel, this, [&](int cid, std::shared_ptr<AssetParameterModel> model, bool refreshOnly) {
         m_assetPanel->showMix(cid, model, refreshOnly);
@@ -2132,6 +2136,7 @@ void MainWindow::setupActions()
 
     // Keyframe actions
     m_assetPanel = new AssetPanel(this);
+    m_arkenInspector = new Arken::ArkenInspector(this);
     KActionCategory *kfActions = new KActionCategory(i18n("Effect Keyframes"), actionCollection());
     addAction(QStringLiteral("keyframe_add"), i18n("Add/Remove Keyframe"), m_assetPanel, SLOT(slotAddRemoveKeyframe()),
               QIcon::fromTheme(QStringLiteral("keyframe-add")), QKeySequence(), kfActions);

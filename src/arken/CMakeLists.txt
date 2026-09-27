@@ -6,5 +6,7 @@ set(kdenlive_SRCS
   arken/arkenshell.cpp
   arken/arkentheme.cpp
   arken/arkenstyle.cpp
+  arken/arkeninspector.cpp
+  arken/arkeninspector_main.cpp
   PARENT_SCOPE
 )

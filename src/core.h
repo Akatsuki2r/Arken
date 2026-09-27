@@ -9,6 +9,7 @@ SPDX-License-Identifier: GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 #include "jobs/taskmanager.h"
 #include "undohelper.hpp"
 #include "utils/timecode.h"
+#include "arken/arkeninspector.h"
 
 #include <KMessageWidget>
 #include <KSharedDataCache>
@@ -368,6 +369,12 @@ public:
     std::pair<bool, bool> assetHasAV(ObjectId id);
     /** @brief Show an item's effect stack */
     void showEffectStackFromId(ObjectId owner);
+    /** @brief Request Inspector context update (ArkenV). */
+    void requestInspectorContext(Arken::InspectorContext context, ObjectId owner,
+                                 std::shared_ptr<EffectStackModel> stackModel = nullptr,
+                                 std::shared_ptr<AssetParameterModel> paramModel = nullptr,
+                                 const QSize &frameSize = QSize(),
+                                 bool showKeyframes = false);
     /** @brief Get the Bin id and position offset for the selected timeline clip */
     std::pair<QString, int> getSelectedClipAndOffset();
     /** @brief Get the current offset for active timeline */
@@ -557,6 +564,12 @@ Q_SIGNALS:
     void mltWarning(const QString &message);
     /** @brief Request display of effect stack for a Bin clip. */
     void requestShowBinEffectStack(const QString &clipName, std::shared_ptr<EffectStackModel>, QSize frameSize, bool showKeyframes);
+    /** @brief Request Inspector context update (ArkenV). */
+    void inspectorContextRequested(Arken::InspectorContext context, ObjectId owner,
+                                   std::shared_ptr<EffectStackModel> stackModel = nullptr,
+                                   std::shared_ptr<AssetParameterModel> paramModel = nullptr,
+                                   const QSize &frameSize = QSize(),
+                                   bool showKeyframes = false);
     /** @brief Save guide categories in document properties */
     void saveGuideCategories();
     /** @brief When creating a backup file, also save a thumbnail of current timeline */

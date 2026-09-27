@@ -37,6 +37,7 @@ SPDX-License-Identifier: GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 #include "bin/bin.h"
 #include "definitions.h"
 #include "jobs/abstracttask.h"
+#include "definitions.h"
 #include "otio/otioexport.h"
 #include "otio/otioimport.h"
 #include "powermanagementinterface.h"
@@ -60,6 +61,10 @@ class Transition;
 class TimelineItemModel;
 class MonitorProxy;
 class KDualAction;
+
+namespace Arken {
+class ArkenInspector;
+}
 
 class MltErrorEvent : public QEvent
 {
@@ -260,6 +265,7 @@ private:
     EffectListWidget *m_effectList2{nullptr};
 
     AssetPanel *m_assetPanel{nullptr};
+    Arken::ArkenInspector *m_arkenInspector{nullptr};
     KDDockWidgets::QtWidgets::DockWidget *m_effectStackDock{nullptr};
 
     KDDockWidgets::QtWidgets::DockWidget *m_clipMonitorDock{nullptr};
